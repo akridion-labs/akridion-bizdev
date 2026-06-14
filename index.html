@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>BizDev Command Center — Akridion Labs LLP</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f2f7;color:#1a1a2e;min-height:100vh}
+:root{--navy:#0D1B3E;--red:#E8350A;--green:#27ae60;--orange:#e67e22;--blue:#2980b9}
+
+/* HEADER */
+.header{background:linear-gradient(135deg,var(--navy),#1a2d5a);padding:16px 20px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,0.3)}
+.header-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.logo-area{display:flex;align-items:center;gap:12px}
+.logo-box{width:38px;height:38px;background:var(--red);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900;color:white;font-size:14px;letter-spacing:-1px;flex-shrink:0}
+.brand h1{color:white;font-size:16px;font-weight:700;line-height:1.2}
+.brand p{color:#aac4ff;font-size:11px}
+.stats-bar{display:flex;gap:8px;flex-wrap:wrap}
+.stat{background:rgba(255,255,255,0.1);border-radius:20px;padding:4px 12px;font-size:12px;color:white;font-weight:500}
+.stat.new{background:rgba(39,174,96,0.3);color:#a8f0c6}
+.stat.updated{background:rgba(41,128,185,0.3);color:#a8d4f0}
+.stat.awarded{background:rgba(232,53,10,0.2);color:#ffb3a0}
+
+/* CONTROLS */
+.controls{background:white;border-bottom:1px solid #e8ecf5;padding:12px 20px;position:sticky;top:73px;z-index:99}
+.controls-inner{max-width:1100px;margin:0 auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.search{flex:1;min-width:180px;padding:8px 14px;border:1.5px solid #dde3f0;border-radius:20px;font-size:13px;outline:none;transition:border 0.2s}
+.search:focus{border-color:var(--navy)}
+.filter-tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid #dde3f0;background:white;color:#666;transition:all 0.2s;white-space:nowrap}
+.tab.active{background:var(--navy);color:white;border-color:var(--navy)}
+.tab:hover:not(.active){border-color:var(--navy);color:var(--navy)}
+
+/* MAIN */
+.main{max-width:1100px;margin:0 auto;padding:16px 16px 40px}
+.updated-note{font-size:11px;color:#999;text-align:center;margin-bottom:12px}
+
+/* SECTION */
+.section{margin-bottom:20px}
+.section-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid var(--red)}
+.section-title{font-size:14px;font-weight:700;color:var(--navy)}
+.section-count{background:var(--red);color:white;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px}
+
+/* CARDS */
+.cards{display:flex;flex-direction:column;gap:10px}
+.card{background:white;border-radius:12px;padding:14px 16px;box-shadow:0 1px 4px rgba(0,0,0,0.06);border-left:4px solid #e8ecf5;transition:box-shadow 0.2s}
+.card:hover{box-shadow:0 4px 16px rgba(0,0,0,0.1)}
+.card.status-new{border-left-color:var(--green)}
+.card.status-updated{border-left-color:var(--blue)}
+.card.status-awarded{border-left-color:var(--red);background:#fff8f6}
+.card.status-closed{border-left-color:#ccc;opacity:0.7}
+.card-top{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+.status-badge{flex-shrink:0;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-top:2px;white-space:nowrap}
+.badge-new{background:#d5f5e3;color:#1a7a3e}
+.badge-updated{background:#d6eaf8;color:#1a5276}
+.badge-awarded{background:#fde8e4;color:#c0392b}
+.badge-active{background:#f0f0f0;color:#555}
+.card-title{font-size:14px;font-weight:600;color:#1a1a2e;line-height:1.4;flex:1}
+.card-title a{color:inherit;text-decoration:none}
+.card-title a:hover{color:var(--red)}
+.card-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+.source-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:var(--navy);color:white}
+.sector-tag{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:500}
+.meta-item{font-size:11px;color:#888;display:flex;align-items:center;gap:3px}
+.awarded-banner{background:#fde8e4;border-radius:6px;padding:6px 10px;font-size:12px;color:#c0392b;margin-bottom:10px}
+.awarded-banner strong{font-weight:600}
+.notes-box{background:#f8f9ff;border-radius:6px;padding:6px 10px;font-size:11px;color:#555;margin-bottom:10px;font-style:italic}
+
+/* ACTION BUTTONS */
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;cursor:pointer;border:none;transition:all 0.2s;white-space:nowrap}
+.btn-proposal{background:var(--navy);color:white}
+.btn-proposal:hover{background:#162d5e;color:white}
+.btn-view{background:#f0f4ff;color:var(--navy);border:1.5px solid #c5d3f0}
+.btn-view:hover{background:#e0e8ff}
+.btn-aside{background:#f5f5f5;color:#666;border:1.5px solid #ddd}
+.btn-aside:hover{background:#ebe8e8;color:#333}
+.btn-aside.active-aside{background:#fff3cd;color:#856404;border-color:#ffc107}
+
+/* DEADLINE */
+.deadline-urgent{color:#c0392b;font-weight:600}
+.deadline-soon{color:#e67e22;font-weight:500}
+
+.no-results{text-align:center;padding:40px 20px;color:#aaa;font-size:14px}
+
+@media(max-width:500px){
+  .header-inner{flex-direction:column;align-items:flex-start}
+  .btn{padding:8px 12px;font-size:11px}
+  .card-title{font-size:13px}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="logo-area">
+      <div class="logo-box">AK</div>
+      <div class="brand">
+        <h1>BizDev Command Center</h1>
+        <p>Akridion Labs LLP &bull; Internal Tool</p>
+      </div>
+    </div>
+    <div class="stats-bar" id="statsBar">
+      <span class="stat">Loading...</span>
+    </div>
+  </div>
+</div>
+
+<div class="controls">
+  <div class="controls-inner">
+    <input class="search" type="search" placeholder="🔍 Search opportunities..." id="searchInput" oninput="render()">
+    <div class="filter-tabs">
+      <button class="tab active" onclick="setTab('all',this)">All</button>
+      <button class="tab" onclick="setTab('new',this)">🆕 New</button>
+      <button class="tab" onclick="setTab('updated',this)">🔄 Updated</button>
+      <button class="tab" onclick="setTab('awarded',this)">🏆 Awarded</button>
+      <button class="tab" onclick="setTab('india_govt',this)">🏛️ India Govt</button>
+      <button class="tab" onclick="setTab('freelancer',this)">💼 Freelancer</button>
+      <button class="tab" onclick="setTab('europe',this)">🇪🇺 EU</button>
+      <button class="tab" onclick="setTab('research',this)">🔬 Research</button>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+  <p class="updated-note" id="updatedNote">Loading latest opportunities...</p>
+  <div id="content"></div>
+</div>
+
+<script>
+const DATA_URL = 'https://raw.githubusercontent.com/akridion-labs/akridion-bizdev/main/opportunities.json';
+
+const SECTOR_COLORS = {
+  'Healthcare':'#e74c3c','EdTech':'#3498db','AgriTech':'#27ae60',
+  'Transport':'#e67e22','e-Gov':'#8e44ad','Smart City':'#16a085',
+  'FinTech':'#2980b9','Research/R&D':'#6c3483','General IT':'#2c3e50'
+};
+
+const SECTIONS = [
+  {key:'india_govt', label:'🏛️ India Government Portals'},
+  {key:'research',   label:'🔬 CDAC / MeitY Research'},
+  {key:'freelancer', label:'💼 Freelancer Platforms'},
+  {key:'europe',     label:'🇪🇺 Germany / EU Portals'},
+  {key:'b2b',        label:'🤝 B2B / Enterprise'},
+  {key:'startup',    label:'🚀 Startups'},
+  {key:'remote',     label:'🌐 Remote Work Boards'},
+  {key:'community',  label:'🗣️ Community Boards'},
+];
+
+let allData = [];
+let currentTab = 'all';
+let keptAside = JSON.parse(localStorage.getItem('ak_aside') || '[]');
+
+async function loadData() {
+  try {
+    const r = await fetch(DATA_URL + '?t=' + Date.now());
+    const d = await r.json();
+    allData = d.opportunities || [];
+    renderStats(d.summary, d.generated);
+    render();
+  } catch(e) {
+    document.getElementById('content').innerHTML =
+      '<p class="no-results">⚠️ Could not load data. Check connection or try refreshing.</p>';
+    document.getElementById('updatedNote').textContent = 'Failed to load — check your connection';
+  }
+}
+
+function renderStats(s, generated) {
+  const bar = document.getElementById('statsBar');
+  const date = generated
+    ? new Date(generated).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})
+    : 'Today';
+  bar.innerHTML =
+    `<span class="stat">${date}</span>` +
+    (s.new ? `<span class="stat new">🆕 ${s.new} New</span>` : '') +
+    (s.updated ? `<span class="stat updated">🔄 ${s.updated} Updated</span>` : '') +
+    (s.awarded ? `<span class="stat awarded">🏆 ${s.awarded} Awarded</span>` : '') +
+    `<span class="stat">${s.total} Total</span>`;
+  document.getElementById('updatedNote').textContent =
+    `Last updated: ${date} · Auto-refreshes daily at 7am`;
+}
+
+function setTab(tab, el) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+
+function getFiltered() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  return allData.filter(o => {
+    const matchQ = !q ||
+      o.title.toLowerCase().includes(q) ||
+      o.source.toLowerCase().includes(q) ||
+      (o.sector||'').toLowerCase().includes(q);
+    const matchTab =
+      currentTab === 'all' ? true :
+      currentTab === 'new' ? o.status === 'new' :
+      currentTab === 'updated' ? o.status === 'updated' :
+      currentTab === 'awarded' ? o.status === 'awarded' :
+      o.category === currentTab;
+    return matchQ && matchTab;
+  });
+}
+
+function fmtDeadline(dl) {
+  if (!dl || dl === 'Open' || dl === '—') return dl || '—';
+  try {
+    const d = new Date(dl);
+    if (isNaN(d)) return dl;
+    const days = Math.ceil((d - Date.now()) / 86400000);
+    const fmt = d.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+    if (days <= 0) return fmt + ' (Closed)';
+    if (days <= 7) return fmt + ' ⚠️ ' + days + 'd left';
+    if (days <= 21) return fmt + ' · ' + days + 'd left';
+    return fmt;
+  } catch { return dl; }
+}
+
+function dlClass(dl) {
+  if (!dl || dl === 'Open') return '';
+  try {
+    const days = Math.ceil((new Date(dl) - Date.now()) / 86400000);
+    if (days <= 7) return 'deadline-urgent';
+    if (days <= 21) return 'deadline-soon';
+  } catch {}
+  return '';
+}
+
+function makeMailto(o) {
+  const sub = encodeURIComponent('Proposal: ' + o.title + ' — Akridion Labs LLP');
+  const body = encodeURIComponent(
+    'Dear Sir/Madam,\n\nWe at Akridion Labs LLP are interested in: "' + o.title + '"\n\n' +
+    'Source: ' + o.source + '\nBudget: ' + o.budget + '\nDeadline: ' + o.deadline + '\n\n' +
+    'We would like to discuss how our team can deliver this project.\n\n' +
+    'Best regards,\nSales & Marketing Team\nAkridion Labs LLP\ninfo@akridion.com | +91 73869 52828'
+  );
+  return 'mailto:?subject=' + sub + '&body=' + body;
+}
+
+function toggleAside(id, btn) {
+  if (keptAside.includes(id)) {
+    keptAside = keptAside.filter(x => x !== id);
+    btn.textContent = '📌 Keep Aside';
+    btn.classList.remove('active-aside');
+  } else {
+    keptAside.push(id);
+    btn.textContent = '📌 Kept';
+    btn.classList.add('active-aside');
+  }
+  localStorage.setItem('ak_aside', JSON.stringify(keptAside));
+}
+
+function cardHTML(o) {
+  const sc = SECTOR_COLORS[o.sector] || '#2c3e50';
+  const badgeClass = {new:'badge-new',updated:'badge-updated',awarded:'badge-awarded'}[o.status] || 'badge-active';
+  const badgeLabel = {new:'🆕 New',updated:'🔄 Updated',awarded:'🏆 Awarded',active:'Active',closed:'Closed'}[o.status] || o.status;
+  const isAside = keptAside.includes(o.id);
+
+  return `<div class="card status-${o.status}">
+  <div class="card-top">
+    <span class="status-badge ${badgeClass}">${badgeLabel}</span>
+    <div class="card-title"><a href="${o.url}" target="_blank" rel="noopener">${o.title}</a></div>
+  </div>
+  <div class="card-meta">
+    <span class="source-tag">${o.source}</span>
+    <span class="sector-tag" style="background:${sc}20;color:${sc}">${o.sector}</span>
+    ${o.budget && o.budget !== '—' ? `<span class="meta-item">💰 ${o.budget}</span>` : ''}
+    ${o.deadline ? `<span class="meta-item ${dlClass(o.deadline)}">📅 ${fmtDeadline(o.deadline)}</span>` : ''}
+  </div>
+  ${o.status === 'awarded' ? `<div class="awarded-banner">🏆 Awarded to: <strong>${o.awarded_to||'Unknown'}</strong> — Use as competitive intelligence</div>` : ''}
+  ${o.notes ? `<div class="notes-box">📝 ${o.notes}</div>` : ''}
+  <div class="actions">
+    ${o.status !== 'awarded' ? `<a class="btn btn-proposal" href="${makeMailto(o)}">📨 Send Proposal</a>` : ''}
+    <a class="btn btn-view" href="${o.url}" target="_blank" rel="noopener">🔗 View Source</a>
+    <button class="btn btn-aside ${isAside?'active-aside':''}" onclick="toggleAside('${o.id}',this)">${isAside?'📌 Kept':'📌 Keep Aside'}</button>
+  </div>
+</div>`;
+}
+
+function render() {
+  const filtered = getFiltered();
+  const content = document.getElementById('content');
+  if (!filtered.length) {
+    content.innerHTML = '<div class="no-results">No opportunities match your filter.</div>';
+    return;
+  }
+  if (currentTab === 'all') {
+    let html = '';
+    for (const sec of SECTIONS) {
+      const items = filtered.filter(o => o.category === sec.key);
+      if (!items.length) continue;
+      html += `<div class="section">
+        <div class="section-header">
+          <span class="section-title">${sec.label}</span>
+          <span class="section-count">${items.length}</span>
+        </div>
+        <div class="cards">${items.map(cardHTML).join('')}</div>
+      </div>`;
+    }
+    const known = SECTIONS.map(s => s.key);
+    const other = filtered.filter(o => !known.includes(o.category));
+    if (other.length) {
+      html += `<div class="section">
+        <div class="section-header"><span class="section-title">Other</span><span class="section-count">${other.length}</span></div>
+        <div class="cards">${other.map(cardHTML).join('')}</div>
+      </div>`;
+    }
+    content.innerHTML = html || '<div class="no-results">No results.</div>';
+  } else {
+    content.innerHTML = `<div class="cards">${filtered.map(cardHTML).join('')}</div>`;
+  }
+}
+
+loadData();
+setInterval(loadData, 300000);
+</script>
+</body>
+</html>
