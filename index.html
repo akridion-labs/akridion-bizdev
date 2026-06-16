@@ -77,6 +77,24 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .btn-aside{background:#f5f5f5;color:#666;border:1.5px solid #ddd}
 .btn-aside:hover{background:#ebe8e8;color:#333}
 .btn-aside.active-aside{background:#fff3cd;color:#856404;border-color:#ffc107}
+.btn-info{background:#eef4ff;color:#1a4fa8;border:1.5px solid #c5d3f0}
+.btn-info:hover{background:#dce8ff}
+
+/* DETAIL MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:999;align-items:center;justify-content:center;padding:16px}
+.modal-overlay.open{display:flex}
+.modal-box{background:white;border-radius:16px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.25)}
+.modal-header{background:linear-gradient(135deg,var(--navy),#1a2d5a);padding:18px 20px;border-radius:16px 16px 0 0;display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.modal-header h2{color:white;font-size:15px;font-weight:700;line-height:1.4;flex:1}
+.modal-close{background:rgba(255,255,255,0.15);border:none;color:white;font-size:18px;width:30px;height:30px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.modal-close:hover{background:rgba(255,255,255,0.3)}
+.modal-body{padding:20px}
+.modal-row{display:flex;gap:8px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #f0f2f7}
+.modal-row:last-of-type{border-bottom:none}
+.modal-label{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.5px;min-width:80px;padding-top:2px}
+.modal-value{font-size:13px;color:#222;flex:1;word-break:break-word}
+.modal-actions{display:flex;gap:8px;flex-wrap:wrap;padding:16px 20px;border-top:1px solid #eee;background:#f8f9ff;border-radius:0 0 16px 16px}
+.modal-actions a,.modal-actions button{flex:1;min-width:120px;text-align:center;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;border:none}
 
 /* DEADLINE */
 .deadline-urgent{color:#c0392b;font-weight:600}
@@ -84,10 +102,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
 .no-results{text-align:center;padding:40px 20px;color:#aaa;font-size:14px}
 
-@media(max-width:500px){
+@media(max-width:640px){
   .header-inner{flex-direction:column;align-items:flex-start}
-  .btn{padding:8px 12px;font-size:11px}
+  .controls-inner{flex-direction:column;align-items:stretch}
+  .filter-tabs{overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+  .filter-tabs::-webkit-scrollbar{height:3px}
+  .filter-tabs::-webkit-scrollbar-thumb{background:#ccc;border-radius:3px}
+  .tab{white-space:nowrap;flex-shrink:0}
+  .search{width:100%}
+  .btn{padding:8px 10px;font-size:11px}
   .card-title{font-size:13px}
+  .actions{flex-wrap:wrap;gap:6px}
+  .modal-box{margin:8px;border-radius:12px}
+  .modal-actions{flex-direction:column}
+  .modal-actions a,.modal-actions button{width:100%;min-width:unset}
+  .stats-bar{gap:6px}
+  .stat{font-size:11px;padding:3px 8px}
 }
 </style>
 </head>
@@ -117,9 +147,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <button class="tab" onclick="setTab('updated',this)">🔄 Updated</button>
       <button class="tab" onclick="setTab('awarded',this)">🏆 Awarded</button>
       <button class="tab" onclick="setTab('india_govt',this)">🏛️ India Govt</button>
+      <button class="tab" onclick="setTab('research',this)">🔬 CDAC</button>
       <button class="tab" onclick="setTab('freelancer',this)">💼 Freelancer</button>
+      <button class="tab" onclick="setTab('linkedin',this)">💼 LinkedIn</button>
       <button class="tab" onclick="setTab('europe',this)">🇪🇺 EU</button>
-      <button class="tab" onclick="setTab('research',this)">🔬 Research</button>
+      <button class="tab" onclick="setTab('b2b',this)">🤝 B2B</button>
+      <button class="tab" onclick="setTab('remote',this)">🌐 Remote</button>
     </div>
   </div>
 </div>
@@ -142,11 +175,12 @@ const SECTIONS = [
   {key:'india_govt', label:'🏛️ India Government Portals'},
   {key:'research',   label:'🔬 CDAC / MeitY Research'},
   {key:'freelancer', label:'💼 Freelancer Platforms'},
-  {key:'europe',     label:'🇪🇺 Germany / EU Portals'},
+  {key:'linkedin',   label:'💼 LinkedIn Leads'},
   {key:'b2b',        label:'🤝 B2B / Enterprise'},
   {key:'startup',    label:'🚀 Startups'},
   {key:'remote',     label:'🌐 Remote Work Boards'},
   {key:'community',  label:'🗣️ Community Boards'},
+  {key:'europe',     label:'🇪🇺 Germany / EU Portals'},
 ];
 
 let allData = [];
@@ -158,6 +192,8 @@ async function loadData() {
     const r = await fetch(DATA_URL + '?t=' + Date.now());
     const d = await r.json();
     allData = d.opportunities || [];
+    oppMap = {};
+    allData.forEach(o => oppMap[o.id] = o);
     renderStats(d.summary, d.generated);
     render();
   } catch(e) {
@@ -274,8 +310,8 @@ function cardHTML(o) {
   ${o.status === 'awarded' ? `<div class="awarded-banner">🏆 Awarded to: <strong>${o.awarded_to||'Unknown'}</strong> — Use as competitive intelligence</div>` : ''}
   ${o.notes ? `<div class="notes-box">📝 ${o.notes}</div>` : ''}
   <div class="actions">
-    ${o.status !== 'awarded' ? `<a class="btn btn-proposal" href="${makeMailto(o)}">📨 Send Proposal</a>` : ''}
-    <a class="btn btn-view" href="${o.url}" target="_blank" rel="noopener">🔗 View Source</a>
+    <button class="btn btn-info" onclick="openDetail('${o.id}')">ℹ️ More Info</button>
+    <a class="btn btn-view" href="${o.url}" target="_blank" rel="noopener">🔗 ${o.category==='india_govt'||o.category==='research'?'Go to Portal':'View Source'}</a>
     <button class="btn btn-aside ${isAside?'active-aside':''}" onclick="toggleAside('${o.id}',this)">${isAside?'📌 Kept':'📌 Keep Aside'}</button>
   </div>
 </div>`;
@@ -315,8 +351,202 @@ function render() {
   }
 }
 
+// ── Opportunity map (populated on load) ─────────────────
+let oppMap = {};
+
+// ── Proposal generator ───────────────────────────────────
+function generateProposal(o) {
+  const title = o.title || '';
+  const sector = o.sector || 'General IT';
+  const budget = (o.budget && o.budget !== '—') ? `\nBudget range: ${o.budget}` : '';
+  const isGovt = o.category === 'india_govt' || o.category === 'research';
+  const isFreelancer = o.source && o.source.toLowerCase().includes('freelancer');
+  const isUpwork = o.source && o.source.toLowerCase().includes('upwork');
+  const isLinkedIn = o.category === 'linkedin';
+
+  if (isGovt || o.category === 'research') {
+    return `Subject: Expression of Interest — ${title.substring(0,60)}
+
+Dear Sir/Madam,
+
+We are writing to express our interest in the above-mentioned tender/project opportunity.
+
+Akridion Labs LLP is a DPIIT-recognized technology startup specializing in custom software development, AI/ML solutions, web & mobile applications, and e-governance platforms. We are MSME registered and hold relevant certifications for government procurement.
+
+Our relevant experience includes:
+• Full-stack web & mobile application development
+• AI/ML-powered dashboards and analytics platforms
+• e-Governance portals and citizen-facing digital services
+• Cloud-based SaaS solutions and API integrations
+• Data management and reporting systems for ${sector} sector
+
+We would be glad to submit a detailed technical and financial proposal upon receipt of the RFP/Tender document.${budget}
+
+Please find our profile at akridion.com. We are available for a discussion at your convenience.
+
+Regards,
+Deepak B
+Director — Akridion Labs LLP
+info@akridion.com | akridion.com
+DPIIT Startup India | MSME Registered`;
+  }
+
+  if (isFreelancer || isUpwork) {
+    return `Hi,
+
+I came across your project "${title.substring(0,70)}" and I'm confident Akridion Labs can deliver exactly what you need.
+
+We're a DPIIT-recognized software startup with expertise in:
+✅ Full-stack web & mobile development (React, Node.js, Python)
+✅ AI/ML integration and automation
+✅ ${sector} domain solutions
+✅ Clean, scalable architecture with proper documentation
+
+Why us:
+• MSME-registered professional team, not a solo freelancer
+• Fixed-price or milestone-based contracts available
+• Fast turnaround with daily updates
+• Post-delivery support included${budget}
+
+I'd love to understand your requirements better. Can we set up a quick call?
+
+Best,
+Deepak B | Akridion Labs LLP
+🌐 akridion.com`;
+  }
+
+  if (isLinkedIn) {
+    return `Hi [Name],
+
+I noticed you're looking for ${sector} expertise — Akridion Labs LLP specializes in exactly this space.
+
+We're a DPIIT-recognized startup delivering AI/ML solutions, web & mobile apps, and enterprise software. Would love to explore if there's a fit for collaboration.
+
+Happy to share our portfolio — akridion.com
+
+Best,
+Deepak | Akridion Labs`;
+  }
+
+  return `Hi,
+
+We're Akridion Labs LLP, a DPIIT-recognized tech startup specializing in ${sector} solutions — web & mobile apps, AI/ML, and enterprise software.
+
+We'd love to discuss how we can help with "${title.substring(0,60)}".
+
+Visit us at akridion.com or reply to explore further.
+
+Regards,
+Deepak B | Akridion Labs LLP | info@akridion.com`;
+}
+
+// ── Detail Modal ────────────────────────────────────────
+function openDetail(id) {
+  const o = oppMap[id];
+  if (!o) return;
+
+  const sc = SECTOR_COLORS[o.sector] || '#2c3e50';
+  const statusLabel = {new:'🆕 New',updated:'🔄 Updated',awarded:'🏆 Awarded'}[o.status] || o.status;
+  const deadlineText = fmtDeadline(o.deadline) || '—';
+  const isGovt = o.category === 'india_govt';
+  const isResearch = o.category === 'research';
+
+  // Portal info for govt/research
+  let portalInfo = '';
+  if (isGovt) {
+    portalInfo = `<div style="background:#e8f0fe;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:#1a4fa8">
+      <strong>🏛️ Where to apply:</strong><br>
+      • <a href="https://gem.gov.in/bidsnewui/search/index" target="_blank" style="color:#1a4fa8">GEM Portal — Search & Bid</a><br>
+      • <a href="https://eprocure.gov.in/eprocure/app" target="_blank" style="color:#1a4fa8">eProcure (Central Govt)</a><br>
+      • <a href="https://www.tendertiger.com/tender/SearchResult.aspx?searchtext=software&category=IT+and+Telecom" target="_blank" style="color:#1a4fa8">TenderTiger (all states)</a>
+    </div>`;
+  }
+  if (isResearch) {
+    portalInfo = `<div style="background:#f0faf4;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:#1a6b3c">
+      <strong>🔬 How to apply:</strong><br>
+      • <a href="https://www.cdac.in/index.aspx?id=tender" target="_blank" style="color:#1a6b3c">CDAC Tender Portal</a><br>
+      • <a href="https://meity.gov.in/procurement" target="_blank" style="color:#1a6b3c">MeitY Procurement</a><br>
+      • <a href="https://stpi.in/en/tenders" target="_blank" style="color:#1a6b3c">STPI Tenders</a><br>
+      • Email: <a href="mailto:tender@cdac.in" style="color:#1a6b3c">tender@cdac.in</a> | <a href="mailto:procurement@meity.gov.in" style="color:#1a6b3c">procurement@meity.gov.in</a>
+    </div>`;
+  }
+
+  const rows = [
+    ['Source',    o.source || '—'],
+    ['Sector',    `<span style="background:${sc}20;color:${sc};padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">${o.sector||'—'}</span>`],
+    ['Budget',    o.budget && o.budget !== '—' ? `<strong style="color:#27ae60">${o.budget}</strong>` : '<em style="color:#aaa">Not specified</em>'],
+    ['Deadline',  `<span class="${dlClass(o.deadline)}">${deadlineText}</span>`],
+    ['Status',    statusLabel],
+    ['First seen',o.first_seen || '—'],
+    o.notes ? ['Notes', o.notes] : null,
+    o.awarded_to ? ['Awarded to', `<strong style="color:#c0392b">${o.awarded_to}</strong>`] : null,
+  ].filter(Boolean);
+
+  document.getElementById('modalTitle').textContent = o.title;
+  document.getElementById('modalRows').innerHTML =
+    portalInfo +
+    rows.map(([l,v]) =>
+      `<div class="modal-row"><span class="modal-label">${l}</span><span class="modal-value">${v}</span></div>`
+    ).join('');
+
+  // Generate proposal
+  const proposal = generateProposal(o);
+  document.getElementById('modalProposal').value = proposal;
+
+  // Action buttons
+  const isFreelancer = o.source && o.source.toLowerCase().includes('freelancer');
+  document.getElementById('modalActionBtns').innerHTML = `
+    <a href="${o.url}" target="_blank" rel="noopener"
+       style="background:var(--navy);color:white">${isGovt||isResearch?'🏛️ Open Portal':'🔗 View Job'}</a>
+    <button onclick="copyProposal()" style="background:#27ae60;color:white">📋 Copy Proposal</button>
+    ${isFreelancer ? `<a href="${o.url}" target="_blank" rel="noopener" style="background:#e67e22;color:white">⚡ Apply on Freelancer</a>` : ''}
+    <button onclick="closeDetail()" style="background:#f0f2f7;color:#555">✕ Close</button>
+  `;
+
+  document.getElementById('detailModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function copyProposal() {
+  const ta = document.getElementById('modalProposal');
+  ta.select();
+  document.execCommand('copy');
+  const btn = document.querySelector('#modalActionBtns button[onclick="copyProposal()"]');
+  if (btn) { btn.textContent = '✅ Copied!'; setTimeout(()=>btn.textContent='📋 Copy Proposal',2000); }
+}
+
+function closeDetail() {
+  document.getElementById('detailModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// Close on overlay click
+document.getElementById('detailModal').addEventListener('click', function(e) {
+  if (e.target === this) closeDetail();
+});
+// Close on Escape key
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetail(); });
+
 loadData();
 setInterval(loadData, 300000);
 </script>
+
+<!-- DETAIL MODAL -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 id="modalTitle"></h2>
+      <button class="modal-close" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="modal-body" id="modalRows"></div>
+    <div style="padding:0 20px 12px">
+      <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">📝 Curated Proposal — Copy &amp; Send</div>
+      <textarea id="modalProposal" readonly
+        style="width:100%;height:180px;border:1.5px solid #dde3f0;border-radius:8px;padding:10px;font-size:12px;line-height:1.6;color:#333;background:#fafbff;resize:vertical;font-family:inherit"></textarea>
+    </div>
+    <div class="modal-actions" id="modalActionBtns"></div>
+  </div>
+</div>
+
 </body>
 </html>
