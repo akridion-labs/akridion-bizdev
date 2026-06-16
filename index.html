@@ -520,15 +520,17 @@ function closeDetail() {
   document.body.style.overflow = '';
 }
 
-// Close on overlay click
-document.getElementById('detailModal').addEventListener('click', function(e) {
-  if (e.target === this) closeDetail();
-});
-// Close on Escape key
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetail(); });
-
 loadData();
 setInterval(loadData, 300000);
+
+// Attach modal close listeners after DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+  const modal = document.getElementById('detailModal');
+  if (modal) modal.addEventListener('click', function(e) {
+    if (e.target === this) closeDetail();
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetail(); });
+});
 </script>
 
 <!-- DETAIL MODAL -->
